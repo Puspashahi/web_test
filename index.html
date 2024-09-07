@@ -9,8 +9,23 @@
         <div class="fb-login-button" data-width="" data-size="large" data-button-type="continue_with" data-layout="default" data-auto-logout-link="false" data-use-continue-as="false"></div>
 
     <button onclick="logout()">Logout</button>
+    <div id="userData" style="display: none;">
+            <h2>User Information</h2>
+            <p>Name: <span id="userName"></span></p>
+            <p>Email: <span id="userEmail"></span></p>
+    </div>
 
     <div id="status"></div>
+    <h1>Media Access Example</h1>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="startButton">Start Camera</button>
+    <button id="stopButton">Stop Camera</button>
+    <button id="recordButton">Start Recording</button>
+    <button id="stopRecordingButton">Stop Recording</button>
+    <button id="uploadButton">Upload Photo</button>
+    <input type="file" id="fileInput" accept="image/*" style="display:none;"/>
+
+    
 
         <script>
             window.fbAsyncInit = function() {
@@ -23,7 +38,89 @@
                 
               FB.AppEvents.logPageView();   
             };
-          
+            // Media Access Code
+            const video = document.getElementById('video');
+            const startButton = document.getElementById('startButton');
+            const stopButton = document.getElementById('stopButton');
+            const recordButton = document.getElementById('recordButton');
+            const stopRecordingButton = document.getElementById('stopRecordingButton');
+            const uploadButton = document.getElementById('uploadButton');
+            const fileInput = document.getElementById('fileInput');
+            let mediaStream = null;
+            let mediaRecorder;
+            let recordedChunks = [];
+
+             // Start the camera
+             startButton.addEventListener('click', async () => {
+                try {
+                    mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    video.srcObject = mediaStream;
+                } catch (error) {
+                    console.error('Error accessing the camera and microphone: ', error);
+                }
+            });
+
+
+            // Stop the camera
+            stopButton.addEventListener('click', () => {
+                if (mediaStream) {
+                    const tracks = mediaStream.getTracks();
+                    tracks.forEach(track => track.stop());
+                    video.srcObject = null; // Stop displaying the video
+                }
+            });
+
+             // Start recording
+             recordButton.addEventListener('click', () => {
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(mediaStream);
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'recorded-video.webm';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                };
+                mediaRecorder.start();
+            });
+            
+            // Stop recording
+            stopRecordingButton.addEventListener('click', () => {
+                if (mediaRecorder) {
+                    mediaRecorder.stop();
+                }
+            });
+            
+            // Upload photo from gallery
+            uploadButton.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.width = 200; // Set width for display
+                    document.body.appendChild(img); // Display the uploaded image
+                }
+            });
+
+
+
+
+
+
+
             (function(d, s, id){
                var js, fjs = d.getElementsByTagName(s)[0];
                if (d.getElementById(id)) {return;}
@@ -32,6 +129,23 @@
                fjs.parentNode.insertBefore(js, fjs);
              }(document, 'script', 'facebook-jssdk'));
         </script>
+            <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v16.0&appId=YOUR_APP_ID" nonce="YOUR_NONCE"></script>
+
+            <fb:login-button 
+              scope="public_profile,email"
+              onlogin="checkLoginState();">
+            </fb:login-button>
+        
+            <div id="userData" style="display: none;">
+              <h2>User Information</h2>
+              <p>Name: <span id="userName"></span></p>
+              <p>Email: <span id="userEmail"></span></p>
+            </div>
+        
+            <!-- JavaScript will go here -->
+
+
+
 
         <fb:login-button 
             scope="public_profile,email"
@@ -114,18 +228,7 @@
         }
     }
 
-    function logout() {
-        FB.logout(function(response) {
-            console.log('User logged out');
-            document.getElementById('userInfo').style.display = 'none';
-        });
-    }
-    <!-- ... existing code ... -->
-
-<div id="userInfo" style="display: none;">
-    Welcome, <span id="userName"></span>!
-</div>
-
+   
 <script>
     // ... existing functions ...
 
@@ -162,5 +265,58 @@
 
 
         </script>
+        <div id="userData" style="display: none;">
+      <h2>User Information</h2>
+      <p>Name: <span id="userName"></span></p>
+      <p>Email: <span id="userEmail"></span></p>
+    </div>
+
+    <script>
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId      : 'YOUR_APP_ID',
+                cookie     : true,
+                xfbml      : true,
+                version    : 'v16.0'
+            });
+            
+            FB.AppEvents.logPageView();   
+        };
+
+        function checkLoginState() {
+          FB.getLoginStatus(function(response) {
+            if (response.status === 'connected') {
+              getUserData();
+            } else {
+              console.log('User not fully authenticated');
+            }
+          });
+        }
+
+        function getUserData() {
+          FB.api('/me', {fields: 'name,email'}, function(response) {
+            if (response && !response.error) {
+              console.log('User data:', response);
+              
+              document.getElementById('userName').textContent = response.name;
+              document.getElementById('userEmail').textContent = response.email;
+              document.getElementById('userData').style.display = 'block';
+            } else {
+              console.error('Error fetching user data:', response.error);
+            }
+          });
+        }
+    </script>
+
+
+
+
+
+
+
+
+
+    </body>
+</html>
     </body>
 </html>
