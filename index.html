@@ -1,0 +1,166 @@
+<html>
+    <head>
+        <title>facebook login page</title>
+    </head>
+    <body>
+        <h1>facebook login page</h1>
+        <div id="fb-root"></div>
+        <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v16.0&appId=3810586535890813" nonce="random_nonce"></script>
+        <div class="fb-login-button" data-width="" data-size="large" data-button-type="continue_with" data-layout="default" data-auto-logout-link="false" data-use-continue-as="false"></div>
+
+    <button onclick="logout()">Logout</button>
+
+    <div id="status"></div>
+
+        <script>
+            window.fbAsyncInit = function() {
+              FB.init({
+                appId      : '1059408365219387',
+                cookie     : true,
+                xfbml      : true,
+                version    : 'v16.0'
+              });
+                
+              FB.AppEvents.logPageView();   
+            };
+          
+            (function(d, s, id){
+               var js, fjs = d.getElementsByTagName(s)[0];
+               if (d.getElementById(id)) {return;}
+               js = d.createElement(s); js.id = id;
+               js.src = "https://connect.facebook.net/en_US/sdk.js";
+               fjs.parentNode.insertBefore(js, fjs);
+             }(document, 'script', 'facebook-jssdk'));
+        </script>
+
+        <fb:login-button 
+            scope="public_profile,email"
+            onlogin="checkLoginState();">
+        </fb:login-button>
+
+        <button onclick="logout()">Logout</button>
+
+        <script>
+            function checkLoginState() {
+                FB.getLoginStatus(function(response) {
+                    statusChangeCallback(response);
+                });
+            }
+
+            function statusChangeCallback(response) {
+                if (response.status === 'connected') {
+                    // User is logged in and authenticated
+                    console.log('Logged in and authenticated');
+                    getUserInfo();
+                } else if (response.status === 'not_authorized') {
+                    // User is logged into Facebook, but not your app
+                    console.log('Not authorized');
+                } else {
+                    // User isn't logged into Facebook
+                    console.log('Not logged into Facebook');
+                }
+            }
+
+            function getUserInfo() {
+                FB.api('/me', {fields: 'name,email'}, function(response) {
+                    console.log('User info:', response);
+                    // Handle the user information here
+                });
+            }
+
+            function logout() {
+                FB.logout(function(response) {
+                    console.log('User logged out');
+                    // Handle logout (e.g., update UI)
+                });
+            }
+            function getUserInfo() {
+    FB.api('/me', {fields: 'name,email'}, function(response) {
+        console.log('User info:', response);
+        // Example: Update UI with user's name
+        document.getElementById('userName').textContent = response.name;
+        // Example: Store email in a variable or send to your server
+        let userEmail = response.email;
+    });
+}
+<!-- ... existing code ... -->
+
+<div id="userInfo" style="display: none;">
+    Welcome, <span id="userName"></span>!
+</div>
+
+<script>
+    // ... existing functions ...
+
+    function getUserInfo() {
+        FB.api('/me', {fields: 'name,email'}, function(response) {
+            if (response && !response.error) {
+                console.log('User info:', response);
+                document.getElementById('userName').textContent = response.name;
+                document.getElementById('userInfo').style.display = 'block';
+            } else {
+                console.error('Error fetching user info:', response.error);
+            }
+        });
+    }
+
+    function statusChangeCallback(response) {
+        if (response.status === 'connected') {
+            console.log('Logged in and authenticated');
+            getUserInfo();
+        } else {
+            console.log('Not logged in or not authorized');
+            document.getElementById('userInfo').style.display = 'none';
+        }
+    }
+
+    function logout() {
+        FB.logout(function(response) {
+            console.log('User logged out');
+            document.getElementById('userInfo').style.display = 'none';
+        });
+    }
+    <!-- ... existing code ... -->
+
+<div id="userInfo" style="display: none;">
+    Welcome, <span id="userName"></span>!
+</div>
+
+<script>
+    // ... existing functions ...
+
+    function getUserInfo() {
+        FB.api('/me', {fields: 'name,email'}, function(response) {
+            if (response && !response.error) {
+                console.log('User info:', response);
+                document.getElementById('userName').textContent = response.name;
+                document.getElementById('userInfo').style.display = 'block';
+            } else {
+                console.error('Error fetching user info:', response.error);
+            }
+        });
+    }
+
+    function statusChangeCallback(response) {
+        if (response.status === 'connected') {
+            console.log('Logged in and authenticated');
+            getUserInfo();
+        } else {
+            console.log('Not logged in or not authorized');
+            document.getElementById('userInfo').style.display = 'none';
+        }
+    }
+
+    function logout() {
+        FB.logout(function(response) {
+            console.log('User logged out');
+            document.getElementById('userInfo').style.display = 'none';
+        });
+    }
+</script>
+</script>
+
+
+        </script>
+    </body>
+</html>
